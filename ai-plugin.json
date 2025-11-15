@@ -4,11 +4,11 @@
     "title": "Mem API",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "https://api.mem.ai/v0"
-    }
-  ],
+"servers": [
+  {
+    "url": "https://cors.isomorphic-git.org/https://api.mem.ai/v0"
+  }
+]
   "paths": {
     "/mems": {
       "get": {
