@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Mem Second Brain",
+  "name_for_model": "mem_second_brain",
+  "description_for_human": "Deep AI memory system connected to your Mem account. Create notes, search, organize collections and upload files automatically.",
+  "description_for_model": "A complete memory interface to the Mem API. Supports creating notes, searching, updating, listing collections, uploading files, organizing content, and retrieving any stored data.",
+  "auth": {
+    "type": "oauth",
+    "authorization_type": "bearer",
+    "instructions": "Use the user's Mem API key as Bearer token. Header: Authorization: Bearer <MEM_API_KEY>"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://your-server-domain.com/openapi.yaml"
+  },
+  "logo_url": "https://mem.ai/favicon.ico",
+  "contact_email": "support@mem.ai",
+  "legal_info_url": "https://mem.ai/legal"
+}
