@@ -1,0 +1,175 @@
+openapi: 3.0.1
+info:
+  title: Mem Second Brain API
+  description: Full-featured Mem API integration for ChatGPT Actions.
+  version: "1.0.0"
+
+servers:
+  - url: https://api.mem.ai/v2
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateMemRequest:
+      type: object
+      properties:
+        input:
+          type: string
+          description: The text content of the mem to create.
+        instructions:
+          type: string
+          description: Additional instructions or metadata.
+
+    UpdateMemRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+
+    FileUploadRequest:
+      type: object
+      properties:
+        memoId:
+          type: string
+        file:
+          type: string
+          format: binary
+
+paths:
+
+  /mem-it:
+    post:
+      summary: Create a new Mem note
+      operationId: createMem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMemRequest"
+      responses:
+        "200":
+          description: Successful creation
+
+  /search:
+    post:
+      summary: Search notes in Mem
+      operationId: searchMem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+      responses:
+        "200":
+          description: Search results returned
+
+  /mems:
+    get:
+      summary: List recent mems
+      operationId: listMems
+      responses:
+        "200":
+          description: List of mems
+
+  /mems/{id}:
+    get:
+      summary: Get a specific mem
+      operationId: getMem
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Mem content returned
+
+    patch:
+      summary: Update a mem
+      operationId: updateMem
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemRequest"
+      responses:
+        "200":
+          description: Updated
+
+    delete:
+      summary: Delete a mem
+      operationId: deleteMem
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /collections:
+    get:
+      summary: List collections
+      operationId: listCollections
+      responses:
+        "200":
+          description: List returned
+
+  /collections/{id}/mems:
+    post:
+      summary: Add a mem to a collection
+      operationId: addMemToCollection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memId:
+                  type: string
+      responses:
+        "200":
+          description: Added
+
+  /files:
+    post:
+      summary: Upload a file to Mem
+      operationId: uploadFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/FileUploadRequest"
+      responses:
+        "200":
+          description: File uploaded
