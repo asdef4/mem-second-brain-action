@@ -1,19 +1,320 @@
 {
-  "schema_version": "v1",
-  "name_for_human": "Mem Second Brain",
-  "name_for_model": "mem_second_brain",
-  "description_for_human": "Deep AI memory system connected to your Mem account. Create notes, search, organize collections and upload files automatically.",
-  "description_for_model": "A complete memory interface to the Mem API. Supports creating notes, searching, updating, listing collections, uploading files, organizing content, and retrieving any stored data.",
-  "auth": {
-    "type": "oauth",
-    "authorization_type": "bearer",
-    "instructions": "Use the user's Mem API key as Bearer token. Header: Authorization: Bearer <MEM_API_KEY>"
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mem Second Brain OS",
+    "version": "0.1.0",
+    "description": "Create/search/update/delete mems, manage collections and upload files in Mem."
   },
-  "api": {
-    "type": "openapi",
-    "url": "https://your-server-domain.com/openapi.yaml"
+  "servers": [
+    { "url": "https://api.mem.ai/v0" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "MemApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Use the format: ApiAccessToken YOUR_TOKEN"
+      }
+    },
+    "schemas": {
+      "Mem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "content": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "source": { "type": "string" }
+        },
+        "required": ["id", "content"]
+      }
+    }
   },
-  "logo_url": "https://mem.ai/favicon.ico",
-  "contact_email": "support@mem.ai",
-  "legal_info_url": "https://mem.ai/legal"
+  "security": [
+    { "MemApiKey": [] }
+  ],
+  "paths": {
+    "/mems": {
+      "get": {
+        "operationId": "listMems",
+        "summary": "List mems",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 200 }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": { "type": "string", "description": "Pagination cursor" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Mem" } },
+                    "nextCursor": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMem",
+        "summary": "Create a new mem",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "Markdown/plain text"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "source": { "type": "string" }
+                },
+                "required": ["content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Mem" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mems/{id}": {
+      "get": {
+        "operationId": "getMem",
+        "summary": "Get mem by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Mem" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMem",
+        "summary": "Update mem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": { "type": "string" },
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Mem" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMem",
+        "summary": "Delete mem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "searchMem",
+        "summary": "Semantic/full-text search in mems",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string" },
+                  "limit": { "type": "integer", "default": 10 }
+                },
+                "required": ["query"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Mem" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collections": {
+      "get": {
+        "operationId": "listCollections",
+        "summary": "List collections",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string" }
+                        },
+                        "required": ["id", "name"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collections/{id}/mems": {
+      "post": {
+        "operationId": "addMemToCollection",
+        "summary": "Add a mem to a collection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "memId": { "type": "string" }
+                },
+                "required": ["memId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Added" }
+        }
+      }
+    },
+    "/files": {
+      "post": {
+        "operationId": "uploadFile",
+        "summary": "Upload a file and create a mem from it",
+      "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Uploaded",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Mem" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
+
